@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnSelect;
     private ImageView ivImage;
     private String userChooserTask;
+    public String TAG = "TAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,14 +84,17 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == Activity.RESULT_OK)
         {
             if (requestCode == SELECT_FILE)
+            {
                 onSelectFromGalleryResult(data);
-        }else if (requestCode == REQUEST_CAMERA)
-        {
-            onGalleryImageResult(data);
+                Log.d(TAG, "onSelectFromGalleryResult workiing");
+            }else if (requestCode == REQUEST_CAMERA)
+            {
+                onCameraImageResult(data);
+            }
         }
     }
 
-    private void onGalleryImageResult(Intent data)
+    private void onCameraImageResult(Intent data)
     {
         Bitmap bitmap = (Bitmap) data.getExtras().get("data");
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -102,19 +107,20 @@ public class MainActivity extends AppCompatActivity {
             fo = new FileOutputStream(destination);
             fo.write(bytes.toByteArray());
             fo.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e){
             e.printStackTrace();
         }
         ivImage.setImageBitmap(bitmap);
+        Log.d(TAG, "Image should be in view from camera");
     }
 
     private void onSelectFromGalleryResult(Intent data){
 
         Bitmap bm = null;
         if (data != null){
+            Log.d(TAG, "data != null");
             try {
                 bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
             } catch (IOException e){
@@ -122,5 +128,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         ivImage.setImageBitmap(bm);
+        Log.d(TAG, "Image should be in view from Gallery");
     }
 }
