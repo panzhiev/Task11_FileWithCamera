@@ -22,11 +22,11 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int REQUEST_CAMERA = 0, SELECT_FILE = 1;
+    private int REQUEST_CAMERA = 0, SELECT_FILE = 1;//задаем REQUEST CODE для того чтобы распознать какой интент нам вернется
     private Button btnSelect;
     private ImageView ivImage;
     private String userChooserTask;
-    public String TAG = "TAG";
+    public String TAG = "MY_TAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,19 +44,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectImage() {
-        final CharSequence[] items = { "Take photo", "Choose From Library", "Cancel"};
+        final CharSequence[] items = { "Take photo", "Choose From Library", "Cancel"}; //создаем массив айтемов для выбора необходимого
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Add photo!");
-        builder.setItems(items, new DialogInterface.OnClickListener() {
+        builder.setTitle("Add photo!");//задаем название диалога
+        builder.setItems(items, new DialogInterface.OnClickListener() {//задаем диалогу наши items и вешаем на них слушателя
             @Override
             public void onClick(DialogInterface dialog, int item) {
-                if(items[item].equals("Take photo"))
+                if(items[item].equals("Take photo"))//сравниваем какой item нам пришел
                 {
                     userChooserTask = "Take Photo";
-                    cameraIntent();
+                    cameraIntent();//вызываем метод, который обрабатывает интент камеры
                 }else if (items[item].equals("Choose From Library")){
-                    galleryIntent();
+                    galleryIntent();//вызываем метод, который обрабатывает интент галереи
                 } else if (items[item].equals("Cancel"))
                 {
                     dialog.dismiss();
@@ -68,8 +68,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void galleryIntent(){
         Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");//задаем тип файлов, которые может принимать интент(все файлы image)
+        intent.setAction(Intent.ACTION_GET_CONTENT);//интент для получение файлов выборка по image/*
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE);
     }
 
@@ -81,17 +81,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK)
+        if (resultCode == Activity.RESULT_OK)//если действие с вызванной активности прошло успешно и интент возвращает нам результат
         {
-            if (requestCode == SELECT_FILE)
+            if (requestCode == SELECT_FILE)//определем чему равен пришедший requestCode
             {
-                onSelectFromGalleryResult(data);
+                onSelectFromGalleryResult(data);//если равен 1, тогда запускаем этот метод и передаем ему intent
                 Log.d(TAG, "onSelectFromGalleryResult workiing");
             }else if (requestCode == REQUEST_CAMERA)
             {
                 onCameraImageResult(data);
             }
         }
+    }
+
+    private void onSelectFromGalleryResult(Intent data){
+
+        Bitmap bm = null;
+        if (data != null){
+            Log.d(TAG, "data != null");
+            try {
+                bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
+                // получаем системный контент провайдер и передаем ему uri - нашего интента
+                Log.d(TAG,"" + data.getData());
+            } catch (IOException e){
+                Log.d(TAG,"" + "EXCEPTION!!!");
+                e.printStackTrace();
+            }
+        }
+        ivImage.setImageBitmap(bm);
+        Log.d(TAG, "Image should be in view from Gallery");
     }
 
     private void onCameraImageResult(Intent data)
@@ -114,20 +132,5 @@ public class MainActivity extends AppCompatActivity {
         }
         ivImage.setImageBitmap(bitmap);
         Log.d(TAG, "Image should be in view from camera");
-    }
-
-    private void onSelectFromGalleryResult(Intent data){
-
-        Bitmap bm = null;
-        if (data != null){
-            Log.d(TAG, "data != null");
-            try {
-                bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-        }
-        ivImage.setImageBitmap(bm);
-        Log.d(TAG, "Image should be in view from Gallery");
     }
 }
